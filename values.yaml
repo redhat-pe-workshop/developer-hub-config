@@ -111,6 +111,7 @@ upstream:
           #     fallbackBranch: master
           #     skipForkedRepos: true
           #     entityFilename: catalog-info.yaml
+          #     projectPattern: \w*techdocs\w*
           #     schedule:
           #       frequency: { minutes: 2 }
           #       timeout: { minutes: 3 }
