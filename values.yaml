@@ -50,6 +50,30 @@ global:
       #   disabled: false
       ## --- RBAC ---
 
+      ## --- ADOPTION INSIGHTS PLUGIN ---
+      #- package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
+      #  disabled: true
+      #- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-adoption-insights:bs_1.35.1__0.0.2!red-hat-developer-hub-backstage-plugin-adoption-insights
+      #  disabled: false
+      #  pluginConfig:
+      #    dynamicPlugins:
+      #      frontend:
+      #        red-hat-developer-hub.backstage-plugin-adoption-insights:
+      #          appIcons:
+      #            - name: adoptionInsightsIcon
+      #              importName: AdoptionInsightsIcon
+      #          dynamicRoutes:
+      #            - path: /adoption-insights
+      #              importName: AdoptionInsightsPage
+      #              menuItem:
+      #                icon: adoptionInsightsIcon
+      #                text: Adoption Insights
+      #          menuItems:
+      #            adoption-insights:
+      #              parent: admin
+      #              icon: adoptionInsightsIcon
+      ## --- ADOPTION INSIGHTS PLUGIN ---
+
       ## --- ORCHESTRATOR PLUGIN ---
       # - disabled: false
       #   package: "@redhat/backstage-plugin-orchestrator-backend-dynamic@1.4.0"
@@ -107,7 +131,16 @@ upstream:
       #   title: PE Developer Hub
       ## --- APP TITLE ---
 
-      ## --- AUTHENTICATION --- 
+      ## --- ADOPTION INSIGHTS PLUGIN ---
+      # analytics:
+      #    adoptionInsights:
+      #      maxBufferSize: 25
+      #      flushInterval: 6000
+      #      debug: false
+      #      licensedUsers: 1000
+      ## --- ADOPTION INSIGHTS PLUGIN ---
+
+      ## --- AUTHENTICATION ---
       ## This is a development and testing authentication configuration
       auth:
         providers:
@@ -155,20 +188,20 @@ upstream:
         ## --- ORCHESTRATOR ---
         listen:
           port: 7007
-          host: 0.0.0.0        
+          host: 0.0.0.0
 
       integrations:
         gitlab:
           - apiBaseUrl: https://{{ gitlab_host }}/api/v4
             baseUrl: https://{{ gitlab_host }}
             host: {{ gitlab_host }}
-            token: ${GITLAB_TOKEN}          
+            token: ${GITLAB_TOKEN}
       catalog:
         rules:
           - allow: [Component, System, API, Resource, Location, Template, Domain]
         locations: []
         providers:
-          
+
           ## --- GITLAB_CATALOG_PROVIDER ---
           # gitlab:
           #   default:
@@ -315,7 +348,7 @@ upstream:
   #   serviceMonitor:
   #     enabled: true
   #     path: /metrics
-  ## --- MONITORING ---      
+  ## --- MONITORING ---
 
 route:
   host: {{ backstage_host }}
