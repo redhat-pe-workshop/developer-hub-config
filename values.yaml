@@ -1,3 +1,7 @@
+## --- ORCHESTRATOR FEATURE ---
+# orchestrator:
+#   enabled: true
+## --- ORCHESTRATOR FEATURE ---
 global:
   clusterRouterBase: {{ cluster_subdomain }}
   host: {{ backstage_host }}
@@ -47,40 +51,7 @@ global:
       #   disabled: false
       ## --- RBAC ---
 
-      ## --- ORCHESTRATOR PLUGIN ---
-      # - disabled: false
-      #   package: "@redhat/backstage-plugin-orchestrator-backend-dynamic@1.5.1"
-      #   integrity: sha512-VIenFStdq9QvvmgmEMG8O7b2wqIebvEcqNeJ9SWZ8jen9t+efTK6D3Rde74LQ1no1QaHLx8RoxNCOuTUEF8O/g==
-      #   pluginConfig:
-      #     orchestrator:
-      #       dataIndexService:
-      #         url: http://{{ orchestrator_sonataflow_data_index_service }}
-      # - disabled: false
-      #   package: "@redhat/backstage-plugin-orchestrator@1.5.1"
-      #   integrity: sha512-7VOe+XGTUzrdO/av0DNHbydOjB3Lo+XdCs6fj3JVODLP7Ypd3GXHf/nssYxG5ZYC9F1t9MNeguE2bZOB6ckqTA==
-      #   pluginConfig:
-      #     dynamicPlugins:
-      #       frontend:
-      #         red-hat-developer-hub.backstage-plugin-orchestrator:
-      #           appIcons:
-      #             - importName: OrchestratorIcon
-      #               module: OrchestratorPlugin
-      #               name: orchestratorIcon
-      #           dynamicRoutes:
-      #             - importName: OrchestratorPage
-      #               menuItem:
-      #                 icon: orchestratorIcon
-      #                 text: Orchestrator
-      #               module: OrchestratorPlugin
-      #               path: /orchestrator
-      # - disabled: false
-      #   package: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic@1.5.1"
-      #   integrity: sha512-bnVQjVsUZ470Vgm2kd5Lo/bVa2fF0q4GufBDc/8oTQsnP3zZJQqKFvFElBTCjY76RqkECydlvZ1UFybSzvockQ==  
-      #   pluginConfig:
-      #     orchestrator:
-      #       dataIndexService:
-      #         url: http://{{ orchestrator_sonataflow_data_index_service }}
-      # - disabled: false
+      ## --- ORCHESTRATOR ADDITIONAL PLUGINS ---
       #   package: "./dynamic-plugins/dist/backstage-plugin-notifications"
       # - disabled: false
       #   package: "./dynamic-plugins/dist/backstage-plugin-signals"
@@ -92,12 +63,24 @@ global:
 
 upstream:
   postgresql:
+    # We manually supply the postgres secret and create the
+    # backstage-postgresql-svcbind-postgres instead of using
+    # serviceBindings.enabled: true, this is because of a bug
+    # where the chart relies on "lookup" but ArgoCD doesn't 
+    # exuecte the lookup for performance and security reasons.
+    # Failure to do this results in the orchestrator not using
+    # the correct password since the generated svcbind would 
+    # always use a random value
+    serviceBindings:
+      enabled: false
     auth:
       username: postgres
       database: backstage
-      existingSecret: backstage-postgresql
+      existingSecret: backstage-postgresql-svcbind-postgres
       secretKeys:
-        userPasswordKey: postgres-password
+        userPasswordKey: password
+        adminPasswordKey: password
+
   backstage:
     extraEnvVarsSecrets:
       - gitlab-token
