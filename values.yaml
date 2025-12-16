@@ -1,3 +1,7 @@
+## --- ORCHESTRATOR FEATURE ---
+# orchestrator:
+#   enabled: true
+## --- ORCHESTRATOR FEATURE ---
 global:
   clusterRouterBase: {{ cluster_subdomain }}
   host: {{ backstage_host }}
@@ -5,10 +9,7 @@ global:
     includes:
       - dynamic-plugins.default.yaml
     plugins:
-      # Temporary workaround to patch GitLab scaffolder MR creation (https://github.com/backstage/backstage/pull/28703)
-      # We should have a fix in RHDH 1.6...now it's gonna be 1.7
-      - package: oci://quay.io/evanshortiss/backstage-plugin-scaffolder-backend-module-gitlab-dynamic:0.8.1!backstage-plugin-scaffolder-backend-module-gitlab
-      # - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gitlab-dynamic
+      - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gitlab-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-argocd-dynamic
         disabled: false
@@ -50,40 +51,7 @@ global:
       #   disabled: false
       ## --- RBAC ---
 
-      ## --- ORCHESTRATOR PLUGIN ---
-      # - disabled: false
-      #   package: "@redhat/backstage-plugin-orchestrator-backend-dynamic@1.5.1"
-      #   integrity: sha512-VIenFStdq9QvvmgmEMG8O7b2wqIebvEcqNeJ9SWZ8jen9t+efTK6D3Rde74LQ1no1QaHLx8RoxNCOuTUEF8O/g==
-      #   pluginConfig:
-      #     orchestrator:
-      #       dataIndexService:
-      #         url: http://{{ orchestrator_sonataflow_data_index_service }}
-      # - disabled: false
-      #   package: "@redhat/backstage-plugin-orchestrator@1.5.1"
-      #   integrity: sha512-7VOe+XGTUzrdO/av0DNHbydOjB3Lo+XdCs6fj3JVODLP7Ypd3GXHf/nssYxG5ZYC9F1t9MNeguE2bZOB6ckqTA==
-      #   pluginConfig:
-      #     dynamicPlugins:
-      #       frontend:
-      #         red-hat-developer-hub.backstage-plugin-orchestrator:
-      #           appIcons:
-      #             - importName: OrchestratorIcon
-      #               module: OrchestratorPlugin
-      #               name: orchestratorIcon
-      #           dynamicRoutes:
-      #             - importName: OrchestratorPage
-      #               menuItem:
-      #                 icon: orchestratorIcon
-      #                 text: Orchestrator
-      #               module: OrchestratorPlugin
-      #               path: /orchestrator
-      # - disabled: false
-      #   package: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic@1.5.1"
-      #   integrity: sha512-bnVQjVsUZ470Vgm2kd5Lo/bVa2fF0q4GufBDc/8oTQsnP3zZJQqKFvFElBTCjY76RqkECydlvZ1UFybSzvockQ==  
-      #   pluginConfig:
-      #     orchestrator:
-      #       dataIndexService:
-      #         url: http://{{ orchestrator_sonataflow_data_index_service }}
-      # - disabled: false
+      ## --- ORCHESTRATOR ADDITIONAL PLUGINS ---
       #   package: "./dynamic-plugins/dist/backstage-plugin-notifications"
       # - disabled: false
       #   package: "./dynamic-plugins/dist/backstage-plugin-signals"
@@ -93,48 +61,26 @@ global:
       #   package: "./dynamic-plugins/dist/backstage-plugin-signals-backend-dynamic"
       ## --- ORCHESTRATOR PLUGIN ---
 
-      ## --- ADOPTION INSIGHTS PLUGIN ---
-      # - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
-      #   disabled: true
-      # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-adoption-insights:bs_1.35.1__0.0.3!red-hat-developer-hub-backstage-plugin-adoption-insights
-      #   disabled: false
-      #   pluginConfig:
-      #     dynamicPlugins:
-      #       frontend:
-      #         red-hat-developer-hub.backstage-plugin-adoption-insights:
-      #           appIcons:
-      #             - name: adoptionInsightsIcon
-      #               importName: AdoptionInsightsIcon
-      #           dynamicRoutes:
-      #             - path: /adoption-insights
-      #               importName: AdoptionInsightsPage
-      #               menuItem:
-      #                 icon: adoptionInsightsIcon
-      #                 text: Adoption Insights
-      #           menuItems:
-      #             adoption-insights:
-      #               parent: admin
-      #               icon: adoptionInsightsIcon
-      # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-adoption-insights-backend:bs_1.35.1__0.0.4!red-hat-developer-hub-backstage-plugin-adoption-insights-backend
-      #   disabled: false
-      # - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights:bs_1.35.1__0.0.2!red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights
-      #   disabled: false
-      #   pluginConfig:
-      #     dynamicPlugins:
-      #       frontend:
-      #         red-hat-developer-hub.backstage-plugin-analytics-module-adoption-insights:
-      #           apiFactories:
-      #             - importName: AdoptionInsightsAnalyticsApiFactory
-      ## --- ADOPTION INSIGHTS PLUGIN ---
-
 upstream:
   postgresql:
+    # We manually supply the postgres secret and create the
+    # backstage-postgresql-svcbind-postgres instead of using
+    # serviceBindings.enabled: true, this is because of a bug
+    # where the chart relies on "lookup" but ArgoCD doesn't 
+    # exuecte the lookup for performance and security reasons.
+    # Failure to do this results in the orchestrator not using
+    # the correct password since the generated svcbind would 
+    # always use a random value
+    serviceBindings:
+      enabled: false
     auth:
       username: postgres
       database: backstage
-      existingSecret: backstage-postgresql
+      existingSecret: backstage-postgresql-svcbind-postgres
       secretKeys:
-        userPasswordKey: postgres-password
+        userPasswordKey: password
+        adminPasswordKey: password
+
   backstage:
     extraEnvVarsSecrets:
       - gitlab-token
