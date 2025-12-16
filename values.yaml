@@ -52,6 +52,7 @@ global:
       ## --- RBAC ---
 
       ## --- ORCHESTRATOR ADDITIONAL PLUGINS ---
+      # - disabled: false
       #   package: "./dynamic-plugins/dist/backstage-plugin-notifications"
       # - disabled: false
       #   package: "./dynamic-plugins/dist/backstage-plugin-signals"
