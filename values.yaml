@@ -65,11 +65,11 @@ global:
 upstream:
   postgresql:
     # Seems this is now required, at least with OCP 4.20 on CNV
-    primary:
-      podSecurityContext:
-        enabled: true
-        # Remove fsGroup or set to null so OpenShift assigns one
-        fsGroup: null
+    # primary:
+    #   podSecurityContext:
+    #     enabled: true
+    #     # Remove fsGroup or set to null so OpenShift assigns one
+    #     fsGroup: null
     # We manually supply the postgres secret and create the
     # backstage-postgresql-svcbind-postgres instead of using
     # serviceBindings.enabled: true, this is because of a bug
